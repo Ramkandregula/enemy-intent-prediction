@@ -1,0 +1,17 @@
+# Virtual environments
+venv/
+backend/venv/
+frontend/venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment files
+.env
+
+# Databases (optional – remove if you want DB in GitHub)
+*.db
+
+# Models (optional – remove if you want models in GitHub)
+*.pkl
