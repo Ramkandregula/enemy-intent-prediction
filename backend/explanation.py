@@ -12,7 +12,7 @@ def explanation_engine(speed, distance, direction, hospitality):
     """
 
     # 🔴 HIGH THREAT
-    if speed > 85 and distance < 20:
+    if speed > 25 and distance < 20:
         return (
             "High-speed movement detected in close proximity to a sensitive zone, "
             "indicating potential hostile intent."

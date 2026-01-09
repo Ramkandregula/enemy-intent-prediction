@@ -1,26 +1,38 @@
-import streamlit as st 
-import requests 
-if st.button("🚨 THREAT DETECTION", use_container_width=True):
-    try:
-        res = requests.post("http://127.0.0.1:8000/detect-threat", timeout=5)
+import streamlit as st
+import requests
+import pandas as pd
+import altair as alt
 
-        if res.status_code != 200:
-            st.error("Backend error")
-            st.stop()
+st.set_page_config(layout="wide")
+st.title("🚨 AI Threat Detection Dashboard")
 
-        data = res.json()
+if st.button("🔍 Predict Threat"):
+    res = requests.get("http://127.0.0.1:8000/detect-threat").json()
 
-        # ✅ HANDLE BACKEND ERROR RESPONSE
-        if "error" in data:
-            st.error(data["error"])
-            st.stop()
+    threat = res["threat_level"]
+    confidence = res["confidence"]
+    explanation = res["explanation"]
+    data = res["inputs"]
 
-        # ✅ SAFE ACCESS
-        st.success(f"Threat Level: {data['threat_level']}")
-        st.info(f"AI Explanation: {data['explanation']}")
+    if threat == "HIGH":
+        st.error(f"🚨 HIGH THREAT ({confidence}%)")
+    elif threat == "MEDIUM":
+        st.warning(f"⚠️ MEDIUM THREAT ({confidence}%)")
+    else:
+        st.success(f"✅ LOW THREAT ({confidence}%)")
 
-        with st.expander("📡 Satellite data used"):
-            st.json(data["used_data"])
+    st.info(explanation)
 
-    except Exception as e:
-        st.error(f"Backend connection failed: {e}")
+    df = pd.DataFrame({
+        "Parameter": ["Speed", "Distance", "Hospitality"],
+        "Value": [data["speed"], data["distance"], data["hospitality"] * 100]
+    })
+
+    st.altair_chart(
+        alt.Chart(df).mark_bar().encode(
+            x="Parameter",
+            y="Value",
+            color="Parameter"
+        ),
+        use_container_width=True
+    )

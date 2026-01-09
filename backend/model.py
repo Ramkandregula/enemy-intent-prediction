@@ -1,25 +1,22 @@
 import joblib
-from explanation_engine import generate_explanation
 
-model = joblib.load("trained_model.pkl")
-importance = joblib.load("feature_importance.pkl")
+model = joblib.load("backend/threat_model.pkl")
 
 def predict_enemy_intent(features):
-    prediction = model.predict([features])[0]
-    confidence = max(model.predict_proba([features])[0]) * 100
+    probs = model.predict_proba([features])[0]
+    idx = probs.argmax()
+    confidence = round(max(probs) * 100, 2)
 
-    top_features = sorted(importance, key=importance.get, reverse=True)[:3]
+    label_map = {0: "LOW", 1: "MEDIUM", 2: "HIGH"}
 
     explanation_map = {
-        "ATTACK": "Rapid movement and high hostility near border",
-        "SURVEILLANCE": "Moderate activity detected, monitoring advised",
-        "NO_THREAT": "Low hostile indicators observed"
+        0: "Low hostile indicators detected. Movement appears routine.",
+        1: "Suspicious activity observed. Monitoring is advised.",
+        2: "High-speed hostile movement near sensitive zone detected."
     }
 
     return {
-        "prediction": prediction,
-        "confidence": round(confidence, 2),
-        "explanation": explanation_map[prediction],
-        "top_features": top_features,
-        "next_action": "Deploy forces" if prediction == "ATTACK" else "Monitor"
+        "threat_level": label_map[idx],
+        "confidence": confidence,
+        "explanation": explanation_map[idx]
     }
